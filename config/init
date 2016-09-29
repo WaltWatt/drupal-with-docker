@@ -1,0 +1,74 @@
+#!/bin/bash
+#
+# Autor: Walt Byte <walt@gbyte.co>
+# Name:  init
+# Path:  <project_root_dir>/config/
+#
+# This script is part of 
+# drudenv: (Drupal in Docker - Development Environment) project
+
+# variables
+# [services]
+WEBS=nginx
+PHPS=php
+DBSS=mysql
+
+HTML_DIR="./html"
+
+SCRIPTS_DIR="./config"
+DRUPAL_INST_SCRIPT="install_drupal"
+
+# ToDo: Test for dependencies!!!
+
+## Test if ./html directory exists in order to avoid  an existing 
+## messing up an existing project.
+if [ -d $HTML_DIR ]; then
+    echo "Error! Directory $HTML_DIR exists!"
+    echo "    Make sure you don't override an existing project?"
+    exit 0
+fi 
+
+mkdir $HTML_DIR
+cp $SCRIPTS_DIR/$DRUPAL_INST_SCRIPT $HTML_DIR/
+
+docker-compose up -d
+
+## Check if all services are running (i.e. if the containers are up)
+STATUS_TMP_FILE=_status_tmp_file
+docker-compose ps | tail -n +3 > $STATUS_TMP_FILE
+
+SERVICES_COUNT=$(cat $STATUS_TMP_FILE | wc -l)
+SERVICES_COUNT_UP=$(grep ' Up ' $STATUS_TMP_FILE | wc -l)
+
+if [[ $SERVICES_COUNT_UP -ne $SERVICES_COUNT ]]; then 
+    echo
+    echo "*** Something went wrong! ***"
+    echo
+    docker-compose ps
+    echo
+    echo "Exiting..."
+    exit 0
+fi
+
+## Since everything is ok
+echo 
+echo "All services seem to be up:"
+docker-compose ps
+
+## Find out the name of the php container 
+PHPS_CONTAINER=$(grep _$(echo $PHPS)_ $STATUS_TMP_FILE | cut -d' ' -f1 )
+
+## Run 'install_drupal' script from within php container. 
+echo 
+echo "Executing the \'$DRUPAL_INST_SCRIPT\' script..."
+docker exec $PHPS_CONTAINER ./$DRUPAL_INST_SCRIPT
+echo "... Done"
+
+## Find out the web server port
+WEBS_PORT=$(grep _$(echo $WEBS)_ $STATUS_TMP_FILE | cut -d':' -f2 | cut -d'-' -f1 )
+echo 
+echo "Web Server is running on port $WEBS_PORT"
+
+## clean up
+rm $STATUS_TMP_FILE $DRUPAL_ILNST_SCRIPT 
+echo 

@@ -1,0 +1,38 @@
+version: '2'
+
+services:
+    nginx:
+        image: nginx:latest
+        ports:
+            ## Random port number (default):
+            - 80
+            ## Standard port number: 
+            # - 80:80  
+            ## User-defined port number, e.g.:
+            # - 8881:80 
+        volumes:
+            - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        volumes_from:
+            - php
+
+    php:
+        build: ./docker/php/ 
+        expose:
+            - 9000
+        volumes:
+            - .:/var/www/
+
+    mysql:
+        image: mysql:latest
+        expose:
+            - 3306
+        environment:
+            ## Adjust the MySql parameters to your liking:
+            MYSQL_DATABASE: drupal
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_USER: drupal
+            MYSQL_PASSWORD: drupal
+        volumes:
+            ## This will map the container's /var/lib/mysql directory to 
+            ## the ./db located on the host
+            - ./db:/var/lib/mysql

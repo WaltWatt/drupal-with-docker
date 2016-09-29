@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# Name:  drupal_install
+#
+# Autor: Walt Byte <walt@gbyte.co>
+# Path:  <project_root_dir>/config/
+#
+# This script is a part of 
+# (Drupal in Docker - Development Environment) project
+ 
+
+WORKDIR="/var/www/html"
+
+DRUPAL_REPO="https://ftp.drupal.org/files/projects"
+
+# Default values. For currently (25/09/2016) the latest durpal 8 version: 
+DRUPAL_VERSION=8.1.10 
+# has to be changed if $DRUPAL_VERSION != 8.1.10:
+DRUPAL_MD5=ce373a1a7a075ff9035b1c95f54170a4 
+
+# ToDo:
+# If you don't want to perform the md5sum check comment/delete the above line 
+# and uncoment the following.
+#DRUPAL_MD5= 
+
+## https://www.drupal.org/node/3060/release
+cd ${WORKDIR}
+curl -fSL ${DRUPAL_REPO}/drupal-${DRUPAL_VERSION}.tar.gz -o drupal.tar.gz 
+echo "${DRUPAL_MD5} *drupal.tar.gz" | md5sum -c - 
+
+## Extract the drupal distribution tarball"
+tar -xz --strip-components=1 -f drupal.tar.gz 
+## ... and clean
+rm drupal.tar.gz 
+
+# The following will fail if the script has not been run 
+# from the php service container
+chown -R www-data:www-data {modules,profiles,sites,themes}
+# ... or alternatively you can make the above changes by executing  
+# an appropriate docker exec... command. For example:
+#    docker exec <your_project_root_directory_name>_php_1 chown -R \
+#    www-data:www-data <directory_or_file_name_in_the_html_folder>
