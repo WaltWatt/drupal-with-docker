@@ -28,13 +28,13 @@ cd ${WORKDIR}
 curl -fSL ${DRUPAL_REPO}/drupal-${DRUPAL_VERSION}.tar.gz -o drupal.tar.gz 
 echo "${DRUPAL_MD5} *drupal.tar.gz" | md5sum -c - 
 
-## Extract the drupal distribution tarball"
+## Extract the downloaded drupal tarball"
 tar -xz --strip-components=1 -f drupal.tar.gz 
 ## ... and clean
 rm drupal.tar.gz 
 
-# The following will fail if the script has not been run 
-# from the php service container
+# The following will fail if the script is not run 
+# from within the php service container
 chown -R www-data:www-data {modules,profiles,sites,themes}
 # ... or alternatively you can make the above changes by executing  
 # an appropriate docker exec... command. For example:
