@@ -13,10 +13,10 @@ WORKDIR="/var/www/html"
 
 DRUPAL_REPO="https://ftp.drupal.org/files/projects"
 
-# Default values. For currently (25/09/2016) the latest durpal 8 version: 
-DRUPAL_VERSION=8.1.10 
-# has to be changed if $DRUPAL_VERSION != 8.1.10:
-DRUPAL_MD5=ce373a1a7a075ff9035b1c95f54170a4 
+# Default values. For currently (5/10/2016) the latest durpal 8 version: 
+DRUPAL_VERSION=8.2.0 
+# has to be changed if $DRUPAL_VERSION != 8.2.0:
+DRUPAL_MD5=5d0c57d2fd6338d60a5e311acc188b44
 
 # ToDo:
 # If you don't want to perform the md5sum check comment/delete the above line 
