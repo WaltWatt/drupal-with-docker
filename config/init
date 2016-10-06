@@ -63,7 +63,6 @@ docker-compose ps
 ## Find out the name of the php container 
 phps_container=$( echo "$services_status" \
                             | grep _${phps}_ | cut -d' ' -f1 )
-echo "$services_status"
 
 ## Run 'install_drupal' script from within the php container. 
 echo 
