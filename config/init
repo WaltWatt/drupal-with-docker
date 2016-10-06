@@ -7,20 +7,20 @@
 # This script is part of
 # drudenv: (Drupal in Docker - Development Environment) project
 
-# services
+## services' names
 webs=nginx
 phps=php
 dbss=mysql
 
-# dirs/files
+## foders/files
 html_dir="./html"
 scripts_dir="./config"
 drupal_inst_script="install_drupal"
 
 # ToDo: Test for dependencies!!!
 
-## Test if ./html directory exists in order to avoid  an existing
-## messing up an existing project.
+## Test if ./html directory exists in order to avoid 
+## messing up if this is not the first initiation.
 if [ -d $html_dir ]; then
     echo "Error! Directory $html_dir exists!"
     echo "    Make sure you don't override an existing project?"
@@ -33,18 +33,17 @@ cp $scripts_dir/$drupal_inst_script $html_dir/
 docker-compose up -d
 
 ## Check if all the services are running (the containers are up)
-status_tmp_file=_status_tmp_file
+#- preserve current terminal width 
+stty_width=$(stty -a | grep columns | cut -d' ' -f7 | cut -d';' -f1)
+services_status=$(stty columns 120; docker-compose ps | tail -n +3)
+#- restore terminal width
+stty columns $stty_width
 
-## ToDo: !!! turns out this is a terrible way to do this
-## - the output file has its lines wrapped (!) when the terminal
-##   width is to small!!!
-## Urgent: replace with 'docker ps' which seems to work as expected!
+services_count=$(echo "$services_status" | wc -l)
+echo service_count: $services_count
 
-docker-compose ps | tail -n +3 > $status_tmp_file
-
-services_count=$(cat $status_tmp_file | wc -l)
-
-services_up_count=$(grep ' Up ' $status_tmp_file | wc -l)
+services_up_count=$(echo "$services_status" | grep ' Up ' | wc -l)
+echo services_up_count: $services_up_count
 
 if [[ $services_up_count -ne $services_count ]]; then 
     echo
@@ -56,13 +55,15 @@ if [[ $services_up_count -ne $services_count ]]; then
     exit 0
 fi
 
-## otherwhise, since everything is ok
+## otherwise, since everything is OK
 echo 
 echo "All the services seem to be up:"
 docker-compose ps
 
 ## Find out the name of the php container 
-phps_container=$(grep _${phps}_ $status_tmp_file | cut -d' ' -f1 )
+phps_container=$( echo "$services_status" \
+                            | grep _${phps}_ | cut -d' ' -f1 )
+echo "$services_status"
 
 ## Run 'install_drupal' script from within the php container. 
 echo 
@@ -71,10 +72,12 @@ docker exec $phps_container ./$drupal_inst_script
 echo "... Done"
 
 ## Find out and show the web server port
-webs_port=$(grep _${webs}_ $status_tmp_file | cut -d':' -f2 | cut -d'-' -f1 )
+webs_port=$(echo "$services_status" \
+                      | grep _${webs}_ | cut -d':' -f2 | cut -d'-' -f1 )
 echo 
 echo "Web Server is running on port $webs_port"
 
 ## clean up
-rm $status_tmp_file $html_dir/$drupal_inst_script 
+rm $html_dir/$drupal_inst_script
 echo 
+exit 0
