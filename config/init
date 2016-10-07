@@ -7,8 +7,12 @@
 
 ##==============
 # config - start
-# --------------
-# Yet to be done
+
+#webs_port=38881
+
+## ToDo:
+# database name
+# ...
 
 # config - end
 ##==============
@@ -33,6 +37,12 @@ if [ -d $html_dir ]; then
     exit 0
 fi
 
+## Apply configuration
+#- web server port number
+if [ ! -z "$webs_port" ]; then 
+    sed -i -r "/ports:/,/volumes:/ s/(^ *- )([0-9]*:)?([0-9]+)/\1$webs_port:\3/" "./docker-compose.yml"
+fi
+
 mkdir $html_dir
 cp $scripts_dir/$drupal_inst_script $html_dir/
 
@@ -46,10 +56,7 @@ services_status=$(stty columns 120; docker-compose ps | tail -n +3)
 stty columns $stty_width
 
 services_count=$(echo "$services_status" | wc -l)
-echo service_count: $services_count
-
 services_up_count=$(echo "$services_status" | grep ' Up ' | wc -l)
-echo services_up_count: $services_up_count
 
 if [[ $services_up_count -ne $services_count ]]; then 
     echo

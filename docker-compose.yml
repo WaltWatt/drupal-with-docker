@@ -4,12 +4,9 @@ services:
     nginx:
         image: nginx:latest
         ports:
-            ## Random port number (default):
+            ##  Random port number (default):
+            #   - 80
             - 80
-            ## Standard port number: 
-            # - 80:80  
-            ## User-defined port number, e.g.:
-            # - 8881:80 
         volumes:
             - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
         volumes_from:
