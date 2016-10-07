@@ -4,8 +4,14 @@
 # Name:  init
 # Path:  <project_root_dir>/config/
 #
-# This script is part of
-# drudenv: (Drupal in Docker - Development Environment) project
+
+##==============
+# config - start
+# --------------
+# Yet to be done
+
+# config - end
+##==============
 
 ## services' names
 webs=nginx
