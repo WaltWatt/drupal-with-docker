@@ -8,11 +8,23 @@
 ##==============
 # config - start
 
-#webs_port=38881
+## web server port (leave unchanged for random)
+#web_server_port=38881
+
+## change default database settings:
+#- root password (default: secret)
+#db_root_password=
+#- drupal database name (default: drupal)
+#db_name=
+#- drupal user name (default: drupal)
+#db_user=
+#- drupal user password (default: drupal)
+#db_user_password=
 
 ## ToDo:
-# database name
-# ...
+## drupal release
+## distro: https://ftp.drupal.org/files/projects/drupal-x.x.x.tar.gz
+## md5sum: https://www.drupal.org/node/3060/release
 
 # config - end
 ##==============
@@ -37,10 +49,36 @@ if [ -d $html_dir ]; then
     exit 0
 fi
 
-## Apply configuration
+## Apply configuration changes
 #- web server port number
-if [ ! -z "$webs_port" ]; then 
-    sed -i -r "/ports:/,/volumes:/ s/(^ *- )([0-9]*:)?([0-9]+)/\1$webs_port:\3/" "./docker-compose.yml"
+if [ ! -z "$web_server_port" ]; then 
+    sed -i -r \
+        "/ports:/,/volumes:/ s/(^ *- )([0-9]*:)?([0-9]+)/\1$web_server_port:\3/" \
+        "./docker-compose.yml"
+fi
+
+#- MySql root password
+if [ ! -z "$db_root_password" ]; then 
+    sed -i -r "s/(^ *MYSQL_ROOT_PASSWORD: +)secret/\1$db_root_password/" \
+              "./docker-compose.yml"
+fi
+
+#- drupal database name 
+if [ ! -z "$db_name" ]; then 
+    sed -i -r "s/(^ *MYSQL_DATABASE: +)drupal/\1$db_name/" \
+              "./docker-compose.yml"
+fi
+
+#- drupal database user name 
+if [ ! -z "$db_user" ]; then 
+    sed -i -r "s/(^ *MYSQL_USER: +)drupal/\1$db_user/" \
+              "./docker-compose.yml"
+fi
+
+#- drupal database user password 
+if [ ! -z "$db_user_password" ]; then 
+    sed -i -r "s/(^ *MYSQL_PASSWORD: +)drupal/\1$db_user_password/" \
+              "./docker-compose.yml"
 fi
 
 mkdir $html_dir
@@ -74,8 +112,7 @@ echo "All the services seem to be up:"
 docker-compose ps
 
 ## Find out the name of the php container 
-phps_container=$( echo "$services_status" \
-                            | grep _${phps}_ | cut -d' ' -f1 )
+phps_container=$( echo "$services_status" | grep _${phps}_ | cut -d' ' -f1 )
 
 ## Run 'install_drupal' script from within the php container. 
 echo 
@@ -84,10 +121,30 @@ docker exec $phps_container ./$drupal_inst_script
 echo "... Done"
 
 ## Find out and show the web server port
-webs_port=$(echo "$services_status" \
+web_server_port=$(echo "$services_status" \
                       | grep _${webs}_ | cut -d':' -f2 | cut -d'-' -f1 )
 echo 
-echo "Web Server is running on port $webs_port"
+echo "       Web server port: $web_server_port"
+echo 
+if [ ! -z "$db_name" ]; then 
+    echo "         Database name: $db_name"
+else
+    echo "         Database name: drupal"
+fi
+
+if [ ! -z "$db_user" ]; then 
+    echo "    Database user name: $db_user"
+else
+    echo "    Database user name: drupal"
+fi
+
+if [ ! -z "$db_user_password" ]; then 
+    echo "Database user password: $db_user_password"
+else
+    echo "Database user password: drupal"
+fi
+echo 
+echo "     MySql server name: $dbss"
 
 ## clean up
 rm $html_dir/$drupal_inst_script
